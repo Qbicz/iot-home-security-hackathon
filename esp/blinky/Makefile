@@ -24,10 +24,8 @@ XTENSA_TOOLS_ROOT ?= /home/filip/ESP/esp-open-sdk/xtensa-lx106-elf/bin
 SDK_BASE	?= /home/filip/ESP/esp-open-sdk/sdk/
 
 # esptool.py path and port
-ESPTOOL		?= /home/filip/ESP/esp-open-sdk/xtensa-lx106-elf/bin/esptool.py
+ESPTOOL		?= esptool.py
 ESPPORT		?= /dev/ttyUSB0
-
-FW_TOOL	?= /usr/bin/esptool
 
 # name for the target project
 TARGET		= app
@@ -56,7 +54,7 @@ SDK_INCDIR	= include include/json
 # we create two different files for uploading into the flash
 # these are the names and options to generate them
 FW_FILE_1_ADDR	= 0x00000
-FW_FILE_2_ADDR	= 0x10000 # OLD: 0x40000
+FW_FILE_2_ADDR	= 0x10000
 
 # select which tools to use as compiler, librarian and linker
 CC		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
@@ -108,16 +106,7 @@ endef
 
 .PHONY: all checkdirs flash clean
 
-all: checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)	
-	$(vecho) "debug 1"
-
-$(FW_FILE_1): $(TARGET_OUT)
-	$(vecho) "FW $@"
-	$(Q) $(FW_TOOL) -eo $(TARGET_OUT) $(FW_FILE_1_ARGS)
-
-$(FW_FILE_2): $(TARGET_OUT)
-	$(vecho) "FW $@"
-	$(Q) $(FW_TOOL) -eo $(TARGET_OUT) $(FW_FILE_2_ARGS)
+all: checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
 
 $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"
@@ -132,7 +121,6 @@ $(APP_AR): $(OBJ)
 	$(Q) $(AR) cru $@ $^
 
 checkdirs: $(BUILD_DIR) $(FW_BASE)
-	$(vecho) "debug checkdirs"
 
 $(BUILD_DIR):
 	$(Q) mkdir -p $@

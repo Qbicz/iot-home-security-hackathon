@@ -25,6 +25,8 @@ void some_timerfunc(void *arg)
         //Set GPIO2 to HIGH
         gpio_output_set(BIT2, 0, BIT2, 0);
     }
+    
+    os_printf("Switching GPIO2!\n\r");
 }
 
 //Do nothing function
@@ -38,6 +40,8 @@ user_procTask(os_event_t *events)
 void ICACHE_FLASH_ATTR
 user_init()
 {
+		os_printf("Test of serial console!!!\n\r");
+
     // Initialize the GPIO subsystem.
     gpio_init();
 
@@ -57,7 +61,7 @@ user_init()
     //&some_timer is the pointer
     //1000 is the fire time in ms
     //0 for once and 1 for repeating
-    os_timer_arm(&some_timer, 1000, 1);
+    os_timer_arm(&some_timer, 500, 1);
     
     //Start os task
     system_os_task(user_procTask, user_procTaskPrio,user_procTaskQueue, user_procTaskQueueLen);
