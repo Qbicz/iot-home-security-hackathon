@@ -1,0 +1,4 @@
+glada:
+    resource: "@GladaBundle/Controller/"
+    type:     annotation
+    prefix:   /
