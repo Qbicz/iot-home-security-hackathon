@@ -1,0 +1,37 @@
+ESP:
+VCC    - 3.3V through push button (for flashing sequence)
+GND    - GND 
+CH_PD  - 3.3V
+TX     - Arduino TX (directly)
+RX     - Arduino RX with voltage divider
+GPIO0  - GND through push button (for flashing sequence)
+GPIO2  - VCC through 1kOhm
+GPIO15 - GND
+
+
+
+
+
+
+
+Flashing sequence:
+
+PWR:	|||||||||_________ (down means powered up)
+GPIO0:	|||||||___|||||||| (down means connected to GND)
+IDE:	.......UPLOADING
+
+
+Voltage Divider:
+
+ESP:			ARDUINO
+   |                       |
+Rx |--------[1 kOhm]-------| Rx
+   |   |                   |
+   |   |                   |
+       -
+      | |
+      2.2kOhm (2.4)
+      |	|	     
+       -
+       |
+      --- GND
