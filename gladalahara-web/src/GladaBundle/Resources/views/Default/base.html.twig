@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>gHOST - Home Security</title>
+        <link rel="stylesheet" href="/css/style.css" media="screen" title="no title">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://fonts.googleapis.com/css?family=Archivo+Narrow:400,700|Poppins:400,700&amp;subset=latin-ext" rel="stylesheet">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <div class="menu">
+            <div class="menu-left">
+                g<span style="font-weight:700;">HOST</span>
+            </div>
+            <div class="menu-right">
+                <span class="burger"></span>
+            </div>
+            <div class="menu-wrapper">
+                <ul>
+                    <li class="active">Dashboard</li>
+                    <li>Alarms</li>
+                    <li>Temperature</li>
+                    <li>CO</li>
+                    <li>Settings</li>
+                </ul>
+            </div>
+        </div>
+        <div class="content">
+          {% block content %} {% endblock %}
+        </div>
+        <script>
+            $(document).ready(function() {
+                $('.menu-right').click(function() {
+                    $('.menu').toggleClass("active");
+                })
+            })
+        </script>
+        {% block custom_js %}{% endblock %}
+    </body>
+</html>
