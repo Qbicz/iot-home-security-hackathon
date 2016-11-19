@@ -38,7 +38,7 @@ void loop()
   Serial.print((float)DHT11.humidity, 2);
   Serial.print("\t\t");
   Serial.print("Temperatura (C): ");           //wyświetlenie temperatury
-  Serial.println((float)DHT11.temperature-2, 2);
+  Serial.println((float)DHT11.temperature-3, 2);
   Serial.print("\t\t");
   float temp;
   temp = (5.0 * analogRead(tempPin) * 100.0) / 1024;
