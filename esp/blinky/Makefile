@@ -24,8 +24,10 @@ XTENSA_TOOLS_ROOT ?= /home/filip/ESP/esp-open-sdk/xtensa-lx106-elf/bin
 SDK_BASE	?= /home/filip/ESP/esp-open-sdk/sdk/
 
 # esptool.py path and port
-ESPTOOL		?= esptool.py
+ESPTOOL		?= /home/filip/ESP/esp-open-sdk/xtensa-lx106-elf/bin/esptool.py
 ESPPORT		?= /dev/ttyUSB0
+
+FW_TOOL	?= /usr/bin/esptool
 
 # name for the target project
 TARGET		= app
@@ -106,7 +108,16 @@ endef
 
 .PHONY: all checkdirs flash clean
 
-all: checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
+all: checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)	
+	$(vecho) "debug 1"
+
+$(FW_FILE_1): $(TARGET_OUT)
+	$(vecho) "FW $@"
+	$(Q) $(FW_TOOL) -eo $(TARGET_OUT) $(FW_FILE_1_ARGS)
+
+$(FW_FILE_2): $(TARGET_OUT)
+	$(vecho) "FW $@"
+	$(Q) $(FW_TOOL) -eo $(TARGET_OUT) $(FW_FILE_2_ARGS)
 
 $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"
@@ -121,6 +132,7 @@ $(APP_AR): $(OBJ)
 	$(Q) $(AR) cru $@ $^
 
 checkdirs: $(BUILD_DIR) $(FW_BASE)
+	$(vecho) "debug checkdirs"
 
 $(BUILD_DIR):
 	$(Q) mkdir -p $@
