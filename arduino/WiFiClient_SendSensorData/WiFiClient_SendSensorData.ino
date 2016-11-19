@@ -17,7 +17,7 @@ void setup() {
     delay(10);
 
     // We start by connecting to a WiFi network
-    WiFiMulti.addAP("Brak Wifi 920", "Sii12345");
+    WiFiMulti.addAP("LetsCodeESP", "ssij1234");
 
     Serial.println();
     Serial.println();
@@ -39,7 +39,7 @@ void setup() {
 
 void loop() {
     const uint16_t port = 7777;
-    const char * host = "192.168.137.240"; // ip of Piotrek's laptop
+    const char * host = "10.42.0.1"; // ip of Piotrek's laptop
    
     Serial.print("connecting to ");
     Serial.println(host);
@@ -58,7 +58,8 @@ void loop() {
 
     // This will send the request to the server
     client.print("Hello server");
-    client.printf("Doors are: ", locked);
+    client.printf("Doors are: %d\n", locked);
+    Serial.printf("Doors are: %d", locked);
     Serial.println("closing connection");
     client.stop();
     
