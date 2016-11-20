@@ -1,5 +1,11 @@
-# Strażnik domu IoT
+# gHOST - Strażnik domu IoT
 Let's Code 2016 - Gładalahara
+
+gHOST jest inteligentnym zestawem czujników do montażu w domu lub przedsiębiorstwie. Użytkownik może dowolnie wybrać czujniki i urządzenia, które uważa za przydatne: przygotowaliśmy czujniki ruchu, magnetyczne czujniki otwarcia okien, czujniki temperatury.
+
+Użytkownik może dowolnie konfigurować co stanie się, kiedy pojawią się sygnały z czujników - wskazujące na obecność złodzieja lub po prostu niesprzyjające warunki w domu. Przygotowaliśmy uruchomienie alarmu dźwiękowego, silnika wentylatora oraz sterowanie światłami.
+
+Do tego użytkownik otrzymuje interfejs mobilny - działający na telefonie lub na komputerze.
 
 # Drużyna:
 - Pan Tomasz Gawlik
