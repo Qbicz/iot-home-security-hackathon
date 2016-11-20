@@ -1,15 +1,87 @@
 {% extends 'GladaBundle:Default:base.html.twig' %}
 {% block content %}
-<div class="box-wrapper">
-  <div class="box">asdf</div>
+<div class="container closed expand" id="asdf">
+  <button id="confirm" style="display:none;padding-bottom:30px;">Confirm all alarms</button>
+  Alarm active: <br><label class="switch"><input type="checkbox" data-id='6' {% if(aon==1) %}checked{% endif %}><div class="slider round"></div></label><br>
+  Room 1 Light: <br><label class="switch"><input type="checkbox" data-id='7' {% if(l1on==1) %}checked{% endif %}><div class="slider round"></div></label><br>
+  Room 2 Light: <br><label class="switch"><input type="checkbox" data-id='8' {% if(l2on==1) %}checked{% endif %}><div class="slider round"></div></label><br>
+  AC: <br><label class="switch"><input type="checkbox" data-id='9' {% if(acon==1) %}checked{% endif %}><div class="slider round"></div></label>
 </div>
-<div class="box-wrapper">
-  <div class="box">asdf</div>
+<div class="wrap"></div>
+{% for res in last %}
+<div class="box-wrapper" data-sensor="{{ loop.index }}" data-room="{{ res[1] }}" data-what='{{ res[0] }}'>
+  <div class="box">
+    <h2>{{ res[0] }}</h2>
+    <h3>Room {{ res[1] }}</h3>
+    <div class="icon"><i class="fa {% if (res[0]=='Temperature') %}fa-thermometer-half{% else %}fa-bell-o{% endif %}" aria-hidden="true"></i></div>
+    <div class="res"><span class="result">{% if(res[0]=='Temperature')%}{{ res[3]|round(1) }}{% elseif(res[3]==0) %}OK{% else %}!!!{% endif %}</span>{% if(res[0]=='Temperature') %}<span class="small">&deg;C</span>{% endif %}</div>
+  </div>
 </div>
-<div class="box-wrapper">
-  <div class="box">asdf</div>
-</div>
-<div class="box-wrapper">
-  <div class="box">asdf</div>
-</div>
+{% endfor %}
+{% endblock %}
+{% block custom_js %}
+<script>
+  $(document).ready(function(){
+    $("#confirm").click(function(e){
+      $.getJSON("/confirm",function(){
+        $("#confirm").fadeOut();
+      });
+    })
+    var boxes = $(".box-wrapper"),
+        threshold = {'Temperature':[18,22,26]};
+        $("#asdf").click(function(){
+          $(".container").toggleClass("closed");
+        });
+        $("input[type='checkbox']").on('click',function(){
+          $.getJSON('/update/setting/'+$(this).data('id')+'/'+(($(this).get(0).checked)?1:0));
+        })
+    setInterval(function(){
+      $.getJSON('/getlastresults',function(data){
+        for(var i=0;i<data.length;i++){
+          if(data[i][0]=='Temperature')
+            $("[data-room='"+data[i][1]+"'][data-what='"+data[i][0]+"'] .result").text(data[i][3]);
+            else{
+              $("[data-room='"+data[i][1]+"'][data-what='"+data[i][0]+"'] .result").text(!(data[i][3])?"OK":"!!!");
+            }
+        }
+        actualizeBoxColor();
+      })
+      actualizeBoxColor();
+    },2000);
+    function actualizeBoxColor(){
+      var n = boxes.length,what,box;
+      while(n--){
+        box = boxes[n];
+        what = $(box).data('what');
+        if(typeof threshold[what] !='undefined'){
+          var res = parseFloat($(box).find('.result').text()),r,g,b,color;
+          if(res<threshold[what][0]){
+            color = 'rgba(0,0,255,0.6)';
+          }else if (res>threshold[what][2]) {
+            color = 'rgba(255,0,0,0.6)';
+          }else if( res<threshold[what][1]){
+            var a = threshold[what][0],b=threshold[what][1];
+            g = Math.floor(-255/(a-b)*(res-a));
+            b = Math.floor(255/(a-b)*(res-b));
+            color = 'rgba(0,'+g+','+b+',0.6)';
+          }else{
+            var a = threshold[what][1],b=threshold[what][2];
+            r = Math.floor(-255/(a-b)*(res-a));
+            g = Math.floor(255/(a-b)*(res-b));
+            color = 'rgba('+r+','+g+',0,0.6)';
+          }
+          $(box).find('.box').css('background-color',color);
+        }else{
+          var res = $(box).find('.result').text().trim();
+          if(res=="OK"){
+            $(box).find('.box').css('background-color',"rgba(10,200,30,0.3)");
+          }else{
+            $(box).find('.box').css('background-color',"rgba(255,0,0,0.6)");
+            $("#confirm").fadeIn().css('display','block');
+          }
+        }
+      }
+    }
+  })
+</script>
 {% endblock %}

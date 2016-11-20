@@ -1,0 +1,90 @@
+{% extends 'GladaBundle:Default:base.html.twig' %}
+{% block content %}
+    <div class="container">
+        <h2>General</h2>
+        <div class="row">Email:
+            <input type="e-mail" id="mail" placeholder="Your email address" value="{{ settings['mail'] }}"></div>
+        <h2>Reaction to alarm</h2>
+        <div class="row table">
+            <div class="col">Room</div>
+            <div class="col">Sensor</div>
+            <div class="col">Alarm</div>
+            <div class="col">Mail</div>
+            <div class="col">Lights</div>
+            <div class="col">A.C.</div>
+        </div>
+        <div class="row table window">
+            <div class="col">1</div>
+            <div class="col">Window</div>
+            <div class="col"><input type="checkbox" {% if settings['window']|slice(0,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['window']|slice(1,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['window']|slice(2,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['window']|slice(3,1)=="1" %} checked{% endif %}></div>
+        </div>
+        <div class="row table temp1">
+            <div class="col">1</div>
+            <div class="col">Temp<span class="mobile-hidden">erature</span></div>
+            <div class="col"><input type="checkbox" {% if settings['temp1']|slice(0,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['temp1']|slice(1,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['temp1']|slice(2,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['temp1']|slice(3,1)=="1" %} checked{% endif %}></div>
+        </div>
+        <div class="row table pir">
+            <div class="col">2</div>
+            <div class="col">Room alarm</div>
+            <div class="col"><input type="checkbox" {% if settings['pir']|slice(0,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['pir']|slice(1,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['pir']|slice(2,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['pir']|slice(3,1)=="1" %} checked{% endif %}></div>
+        </div>
+        <div class="row table temp2">
+            <div class="col">2</div>
+            <div class="col">Temp<span class="mobile-hidden">erature</span></div>
+            <div class="col"><input type="checkbox" {% if settings['temp2']|slice(0,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['temp2']|slice(1,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['temp2']|slice(2,1)=="1" %} checked{% endif %}></div>
+            <div class="col"><input type="checkbox" {% if settings['temp2']|slice(3,1)=="1" %} checked{% endif %}></div>
+        </div>
+        <div class="row" style="margin-top:20px">
+          <button id="save" style="border:0;border-radius:3px;padding:5px 10px">Save settings</button>
+        </div>
+    </div>
+{% endblock %}
+{% block custom_js %}
+<script>
+function collectData(){
+  var data = {};
+  data.mail = $("#mail").val();
+  var s = $(".window input[type=checkbox]");
+  data.window = "";
+  for(var i=0;i<4;i++){
+    data.window+=(s.get(i).checked)?"1":"0";
+  }
+  s = $(".temp1 input[type=checkbox]");
+  data.temp1 = "";
+  for(var i=0;i<4;i++){
+    data.temp1+=(s.get(i).checked)?"1":"0";
+  }
+  s = $(".pir input[type=checkbox]");
+  data.pir = "";
+  for(var i=0;i<4;i++){
+    data.pir+=(s.get(i).checked)?"1":"0";
+  }
+  s = $(".temp2 input[type=checkbox]");
+  data.temp2 = "";
+  for(var i=0;i<4;i++){
+    data.temp2+=(s.get(i).checked)?"1":"0";
+  }
+  return data;
+
+}
+$(document).ready(function(){
+  $("#save").click(function(){
+    console.log("cl")
+    $.post('/settings/save',collectData(),function(){
+      window.location.reload();
+    });
+  });
+});
+</script>
+{% endblock %}
