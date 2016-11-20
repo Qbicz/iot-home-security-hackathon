@@ -1,8 +1,12 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
+#include <dht11.h>
 
-#define ESP2 1
+dht11 DHT11;
+#define DHT11PIN 12
+
+#define ESP1 1
 //define one of the ESP1 or ESP2 for compiling
 //also remember to midify pinout if needed
 
@@ -14,9 +18,12 @@ const int port = 80;
 const char* ssid = "ESPTest";
 const char* pass = "test1234";
 
-const int doorSensorPin = 13;
-const int LEDPin = 14;
-const int temperatureSensorPin = A0;
+const int PirSensorPin = 16;
+const int temperatureSensorPin = 12;
+const int buzzerPin = 5;
+
+const int LEDPin = 2;
+const int MotorPin = 4;
 
 const float SCALLING_FACTOR = 10.0;
 const char STATUS_ERROR = 255;
@@ -37,6 +44,7 @@ void action1_setLight(bool state)
 void action2_Alarm1(bool state)
 {
   //Serial.printf("Bit2: Alarm 1: %d\n", state);
+  digitalWrite(buzzerPin, state);
 }
 
 void action3_Alarm2(bool state)
@@ -47,6 +55,7 @@ void action3_Alarm2(bool state)
 void action4_coolingFan(bool state)
 {
   //Serial.printf("Bit4: Fan: %d\n", state);
+  digitalWrite(MotorPin, state);
 }
 
 void takeActionBasedOnDataFromServer(char inputChar)
@@ -141,8 +150,11 @@ char exchangeDataUsingHTTP(int roomId, bool sensor, float analogValue)
 }
 
 void setup() {
-    pinMode(doorSensorPin, INPUT_PULLUP);
+    pinMode(PirSensorPin, INPUT);
+    pinMode(temperatureSensorPin, INPUT);
     pinMode(LEDPin, OUTPUT);
+    pinMode(MotorPin, OUTPUT);
+    pinMode(buzzerPin, OUTPUT);
   
     //Serial.begin(115200);
     delay(10);
@@ -150,30 +162,32 @@ void setup() {
     // We start by connecting to a WiFi network
     WiFiMulti.addAP(ssid, pass);
 
-    //Serial.println();
-    //Serial.println();
-    //Serial.print("Wait for WiFi... ");
+//    Serial.println();
+//    Serial.println();
+//    Serial.print("Wait for WiFi... ");
 
     while(WiFiMulti.run() != WL_CONNECTED) {
-        //Serial.print(".");
+        Serial.print(".");
         delay(500);
     }
 
-    //Serial.println("");
-    //Serial.println("WiFi connected");
-    //Serial.println("IP address: ");
-    //Serial.println(WiFi.localIP());
+//    Serial.println("");
+//    Serial.println("WiFi connected");
+//    Serial.println("IP address: ");
+//    Serial.println(WiFi.localIP());
 
     delay(500);
 }
 
 
 void loop() {
-    const int roomId = 1;
-    bool locked = digitalRead(doorSensorPin);
-    float temperature = analogRead(temperatureSensorPin)/SCALLING_FACTOR;
-
-    char action = exchangeDataUsingHTTP(roomId, locked, temperature);
+    const int roomId = 2;
+    bool detected = digitalRead(PirSensorPin);
+    float temperature = ((float)DHT11.temperature-3, DHT11PIN);
+//    Serial.print("Temperatura (C): ");           //wyświetlenie temperatury
+//    Serial.println(temperature);
+    
+    char action = exchangeDataUsingHTTP(roomId, detected, temperature);
     takeActionBasedOnDataFromServer(action);
     
     //Serial.printf("wait %d seconds...\n", CYCLE_TIME_S);
