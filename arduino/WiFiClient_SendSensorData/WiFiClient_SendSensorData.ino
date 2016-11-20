@@ -4,8 +4,16 @@
 
 ESP8266WiFiMulti WiFiMulti;
 
+const char* server = "192.168.137.1";
+const int port = 80;
+
+const char* ssid = "ESPTest";
+const char* pass = "test1234";
 
 const int doorSensorPin = 13;
+const int temperatureSensorPin = A0;
+
+const float SCALLING_FACTOR = 10.0;
 //const int ledPin = 7777;
 
 void sendHttpPostData(int roomId, bool sensor, float analogValue)
@@ -13,55 +21,55 @@ void sendHttpPostData(int roomId, bool sensor, float analogValue)
     //"room=1&data=[1,23.7]";
     String PostData = "room=";
     PostData += roomId;
-    PostData += "&data=[";
-    PostData += sensor;
-    PostData += ",";
-    PostData += analogValue;
-    PostData += "]";
+    PostData += "&data=";
+    PostData += 'x';
+//    PostData += ",";
+//    PostData += analogValue;
+//    PostData += "]";
     
-    const uint16_t port = 7777; //change it to 80 when HTTP server will be available
-    const char* host = "10.42.0.1"; // ip of Piotrek's laptop
     // Use WiFiClient class to create TCP connections
     WiFiClient client;
+    Serial.print("Trying: "); Serial.print(server); Serial.print(":"); Serial.println(port);
 
-    if (client.connect(host, port)) 
+    if (client.connect(server, port)) 
     {
-        client.println("POST /posts HTTP/1.1");
-        client.println("Host: 10.42.0.1");
+        client.println("POST /data/send HTTP/1.1");
+        client.println("Host: 192.168.137.1");
         client.println("Cache-Control: no-cache");
         client.println("Content-Type: application/x-www-form-urlencoded");
         client.print("Content-Length: ");
         client.println(PostData.length());
         client.println();
         client.println(PostData);
-        client.stop();
+        
 //for debugging
-        Serial.println(PostData);
+        //Serial.println(PostData);
         
-//        long interval = 2000;
-//        unsigned long currentMillis = millis(), previousMillis = millis();
-//        
-//        while(!client.available()){
-//        
-//          if( (currentMillis - previousMillis) > interval ){
-//        
-//            Serial.println("Timeout");
-//            //blinkLed.detach();
-//            //digitalWrite(2, LOW);
-//            client.stop();     
-//            return;
-//          }
-//          currentMillis = millis();
-//        }
+        long interval = 2000;
+        unsigned long currentMillis = millis(), previousMillis = millis();
         
-//        while (client.connected())
-//        {
-//          if ( client.available() )
-//          {
-//            char str=client.read();
-//            Serial.println(str);
-//          }      
-//        }
+        while(!client.available()){
+        
+          if( (currentMillis - previousMillis) > interval ){
+        
+            Serial.println("Timeout");
+            //blinkLed.detach();
+            //digitalWrite(2, LOW);
+            client.stop();     
+            return;
+          }
+          currentMillis = millis();
+        }
+        
+        while (client.connected())
+        {
+          while ( client.available() )
+          {
+            String line = client.readStringUntil('\r');
+            Serial.print(line);
+          }      
+        }
+        client.stop();
     }
     
 }
@@ -73,7 +81,7 @@ void setup() {
     delay(10);
 
     // We start by connecting to a WiFi network
-    WiFiMulti.addAP("LetsCodeESP", "ssij1234");
+    WiFiMulti.addAP(ssid, pass);
 
     Serial.println();
     Serial.println();
@@ -96,7 +104,8 @@ void setup() {
 void loop() {
     const int roomId = 1;
     bool locked = digitalRead(doorSensorPin);
-    float temperature = 66.6;
+    float temperature = analogRead(temperatureSensorPin)/SCALLING_FACTOR;
+
 
     sendHttpPostData(roomId, locked, temperature);
     
