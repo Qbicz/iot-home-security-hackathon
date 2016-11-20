@@ -11,7 +11,7 @@ void setup()
   Serial.begin(9600);                    //inicjalizacja monitora szeregowego
   Serial.println("Program testowy DHT11"); 
   Serial.println();
-  
+;
 }
  
 void loop()
@@ -44,6 +44,7 @@ void loop()
   temp = (5.0 * analogRead(tempPin) * 100.0) / 1024;
   Serial.print("Temperatura_lm (C): ");  
   Serial.println(temp);
+  Serial.print("\t\t");
   delay(200);
   
  
