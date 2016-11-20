@@ -14,11 +14,12 @@ const int doorSensorPin = 13;
 const int temperatureSensorPin = A0;
 
 const float SCALLING_FACTOR = 10.0;
-//const int ledPin = 7777;
+const char STATUS_ERROR = 255;
+const int CYCLE_TIME_S = 5;
 
 void action0_turnTheLightOn()
 {
-  
+
 }
 
 void action1_turnTheLightOn()
@@ -47,6 +48,14 @@ void takeActionBasedOnDataFromServer(char inputChar)
      * ESP WiFi module receives a byte of data from 
      * smart home server and takes action in its local network
      */
+    
+    if(STATUS_ERROR == inputChar)
+    {
+      Serial.printf("Error receiving data from server\n");
+      return;
+    }
+    
+    Serial.printf("Received: %c, Taking actions:\n", inputChar);
 
     if (inputChar & 0x01 == 0x01)
     {
@@ -68,15 +77,16 @@ void takeActionBasedOnDataFromServer(char inputChar)
         Serial.println("Bit3: ALARM 2");
         action3_Alarm2();
     }
-    if (inputChar & 0x08 == 0x08)
+    if (inputChar & 0x10 == 0x10)
     {
         Serial.println("Bit4: Cooling fan ON");
         action4_coolingFan();
     }
 }
 
-void sendHttpPostData(int roomId, bool sensor, float analogValue)
+char exchangeDataUsingHTTP(int roomId, bool sensor, float analogValue)
 {
+    String lineBuffer = "";
     //"room=1&data=[1,23.7]";
     String PostData = "room=";
     PostData += roomId;
@@ -115,23 +125,28 @@ void sendHttpPostData(int roomId, bool sensor, float analogValue)
             //blinkLed.detach();
             //digitalWrite(2, LOW);
             client.stop();     
-            return;
+            return STATUS_ERROR;
           }
           currentMillis = millis();
         }
         
         while (client.connected())
         {
-          String line = "";
           while ( client.available() )
           {
-            line = client.readStringUntil('\r');
-          }  
-          Serial.print(line);    
+            lineBuffer = client.readStringUntil('\n');
+          }
         }
+        //Serial.println(lineBuffer); 
         client.stop();
     }
-    
+    //Serial.printf("We will send %c\n", lineBuffer[0]);
+    //Serial.printf("Its length is: %d\n", lineBuffer.length());
+
+    if(lineBuffer.length() != 0)
+      return lineBuffer[0];
+    else
+      return STATUS_ERROR;
 }
 
 void setup() {
@@ -166,10 +181,10 @@ void loop() {
     bool locked = digitalRead(doorSensorPin);
     float temperature = analogRead(temperatureSensorPin)/SCALLING_FACTOR;
 
-
-    sendHttpPostData(roomId, locked, temperature);
+    char action = exchangeDataUsingHTTP(roomId, locked, temperature);
+    takeActionBasedOnDataFromServer(action);
     
-    Serial.println("wait 5 sec...");
-    delay(5000);
+    Serial.printf("wait %d seconds...\n", CYCLE_TIME_S);
+    delay(CYCLE_TIME_S*1000);
 }
 
