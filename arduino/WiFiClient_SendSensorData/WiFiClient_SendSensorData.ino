@@ -16,6 +16,66 @@ const int temperatureSensorPin = A0;
 const float SCALLING_FACTOR = 10.0;
 //const int ledPin = 7777;
 
+void action0_turnTheLightOn()
+{
+  
+}
+
+void action1_turnTheLightOn()
+{
+  
+}
+
+void action2_Alarm1()
+{
+  
+}
+
+void action3_Alarm2();
+{
+    
+}
+
+void action4_coolingFan()
+{
+    
+}
+
+void takeActionBasedOnDataFromServer(String inputString)
+{
+    /*
+     * ESP WiFi module receives a byte of data from 
+     * smart home server and takes action in its local network
+     */
+    char inputChar = inputString.charAt(0);
+
+    if (inputChar & 0x01 == 0x01)
+    {
+        client.println("Bit0: Turn the Light 1 ON");
+        action0_turnTheLightOn();
+    }
+    if (inputChar & 0x02 == 0x02)
+    {
+        client.println("Bit1: Turn the Light 2 ON");
+        action1_turnTheLightOn();
+    }
+    if (inputChar & 0x04 == 0x04)
+    {
+        client.println("Bit2: ALARM 1");
+        action2_Alarm1();
+    }
+    if (inputChar & 0x08 == 0x08)
+    {
+        client.println("Bit3: ALARM 2");
+        action3_Alarm2();
+    }
+    if (inputChar & 0x08 == 0x08)
+    {
+        client.println("Bit4: Cooling fan ON");
+        action4_coolingFan();
+    }
+}
+
 void sendHttpPostData(int roomId, bool sensor, float analogValue)
 {
     //"room=1&data=[1,23.7]";
