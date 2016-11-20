@@ -2,6 +2,10 @@
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 
+#define ESP2 1
+//define one of the ESP1 or ESP2 for compiling
+//also remember to midify pinout if needed
+
 ESP8266WiFiMulti WiFiMulti;
 
 const char* server = "192.168.137.1";
@@ -11,35 +15,38 @@ const char* ssid = "ESPTest";
 const char* pass = "test1234";
 
 const int doorSensorPin = 13;
+const int LEDPin = 14;
 const int temperatureSensorPin = A0;
 
 const float SCALLING_FACTOR = 10.0;
 const char STATUS_ERROR = 255;
-const int CYCLE_TIME_S = 5;
+const int CYCLE_TIME_S = 1;
 
-void action0_turnTheLightOn()
+void action0_setLight(bool state)
 {
-
+  //Serial.printf("Bit0: Light 1: %d\n", state);
+  digitalWrite(LEDPin, state);
 }
 
-void action1_turnTheLightOn()
+void action1_setLight(bool state)
 {
-  
+  //Serial.printf("Bit1: Light 2: %d\n", state);
+  digitalWrite(LEDPin, state);
 }
 
-void action2_Alarm1()
+void action2_Alarm1(bool state)
 {
-  
+  //Serial.printf("Bit2: Alarm 1: %d\n", state);
 }
 
-void action3_Alarm2()
+void action3_Alarm2(bool state)
 {
-    
+  //Serial.printf("Bit3: Alarm 2: %d\n", state);
 }
 
-void action4_coolingFan()
+void action4_coolingFan(bool state)
 {
-    
+  //Serial.printf("Bit4: Fan: %d\n", state);
 }
 
 void takeActionBasedOnDataFromServer(char inputChar)
@@ -51,54 +58,38 @@ void takeActionBasedOnDataFromServer(char inputChar)
     
     if(STATUS_ERROR == inputChar)
     {
-      Serial.printf("Error receiving data from server\n");
+      //Serial.printf("Error receiving data from server\n");
       return;
     }
-    
-    Serial.printf("Received: %c, Taking actions:\n", inputChar);
+        
+    //Serial.printf("Received: %c, Taking actions:\n", inputChar);
 
-    if (inputChar & 0x01 == 0x01)
-    {
-        Serial.println("Bit0: Turn the Light 1 ON");
-        action0_turnTheLightOn();
-    }
-    if (inputChar & 0x02 == 0x02)
-    {
-        Serial.println("Bit1: Turn the Light 2 ON");
-        action1_turnTheLightOn();
-    }
-    if (inputChar & 0x04 == 0x04)
-    {
-        Serial.println("Bit2: ALARM 1");
-        action2_Alarm1();
-    }
-    if (inputChar & 0x08 == 0x08)
-    {
-        Serial.println("Bit3: ALARM 2");
-        action3_Alarm2();
-    }
-    if (inputChar & 0x10 == 0x10)
-    {
-        Serial.println("Bit4: Cooling fan ON");
-        action4_coolingFan();
-    }
+    #ifdef ESP1
+        action0_setLight((inputChar & 0x01) == 0x01);
+        action2_Alarm1((inputChar & 0x04) == 0x04);
+        action4_coolingFan((inputChar & 0x10) == 0x10);
+    #endif
+
+    #ifdef ESP2     
+      action1_setLight((inputChar & 0x02) == 0x02);
+      action3_Alarm2((inputChar & 0x08) == 0x08);   
+    #endif
 }
 
 char exchangeDataUsingHTTP(int roomId, bool sensor, float analogValue)
 {
     String lineBuffer = "";
-    //"room=1&data=[1,23.7]";
+     //"room=1&data=[1,23.7]";
     String PostData = "room=";
     PostData += roomId;
     PostData += "&data=";
-    PostData += 'x';
-//    PostData += ",";
-//    PostData += analogValue;
-//    PostData += "]";
+    PostData += sensor;
+    PostData += ",";
+    PostData += analogValue;
     
     // Use WiFiClient class to create TCP connections
     WiFiClient client;
-    Serial.print("Trying: "); Serial.print(server); Serial.print(":"); Serial.println(port);
+    //Serial.print("Trying: "); Serial.print(server); Serial.print(":"); Serial.println(port);
 
     if (client.connect(server, port)) 
     {
@@ -121,7 +112,7 @@ char exchangeDataUsingHTTP(int roomId, bool sensor, float analogValue)
         
           if( (currentMillis - previousMillis) > interval ){
         
-            Serial.println("Timeout");
+            //Serial.println("Timeout");
             //blinkLed.detach();
             //digitalWrite(2, LOW);
             client.stop();     
@@ -151,26 +142,27 @@ char exchangeDataUsingHTTP(int roomId, bool sensor, float analogValue)
 
 void setup() {
     pinMode(doorSensorPin, INPUT_PULLUP);
+    pinMode(LEDPin, OUTPUT);
   
-    Serial.begin(115200);
+    //Serial.begin(115200);
     delay(10);
 
     // We start by connecting to a WiFi network
     WiFiMulti.addAP(ssid, pass);
 
-    Serial.println();
-    Serial.println();
-    Serial.print("Wait for WiFi... ");
+    //Serial.println();
+    //Serial.println();
+    //Serial.print("Wait for WiFi... ");
 
     while(WiFiMulti.run() != WL_CONNECTED) {
-        Serial.print(".");
+        //Serial.print(".");
         delay(500);
     }
 
-    Serial.println("");
-    Serial.println("WiFi connected");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
+    //Serial.println("");
+    //Serial.println("WiFi connected");
+    //Serial.println("IP address: ");
+    //Serial.println(WiFi.localIP());
 
     delay(500);
 }
@@ -184,7 +176,7 @@ void loop() {
     char action = exchangeDataUsingHTTP(roomId, locked, temperature);
     takeActionBasedOnDataFromServer(action);
     
-    Serial.printf("wait %d seconds...\n", CYCLE_TIME_S);
+    //Serial.printf("wait %d seconds...\n", CYCLE_TIME_S);
     delay(CYCLE_TIME_S*1000);
 }
 
